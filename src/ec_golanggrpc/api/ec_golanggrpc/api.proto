@@ -1,0 +1,13 @@
+syntax = 'proto3';
+
+package api;
+
+service GolangGRPC {
+	rpc Echo(GRPCRequest) returns(GRPCStatus) {};
+}
+
+message GRPCRequest {}
+
+message GRPCStatus {
+	string name = 1;
+}

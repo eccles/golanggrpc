@@ -1,0 +1,14 @@
+# TODO
+
+In no particular order:
+
+- use runtime package to track GC performance and others
+- use -pprof to profile code
+- use escape analysis to analyse candidates for GC
+- use metalinter
+- protobuf - generate golang code
+- protobuf - generate python code and generate wheel automatically
+- protobuf - generate C++ code
+- make repo go gettable
+- add ubuntu xenial/bionic support
+- add optional cgo support

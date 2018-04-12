@@ -1,14 +1,17 @@
-# Binaries for programs and plugins
-*.exe
-*.dll
-*.so
-*.dylib
-
 # Test binary, build with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
+# Vim
+*.swp
 
-# Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
-.glide/
+# build artifacts
+bin/
+htmlcov/
+pkg/
+pkg-build/
+.*_container
+python/ec_golanggrpc/api_pb2*.py
+python/ec_golanggrpc/__pycache__
+src/ec_golanggrpc/api/*.go
+src/ec_golanggrpc/vendor/
+src/ec_golanggrpc/Go*

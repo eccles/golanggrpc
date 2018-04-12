@@ -1,0 +1,97 @@
+FROM alpine:3.7
+
+# Install dependencies and python3
+RUN apk update && apk add --no-cache \
+    autoconf \
+    automake \
+    bash \
+    build-base \
+    ca-certificates \
+    curl \
+    fakeroot \
+    gcc \
+    git \
+    libtool \
+    make \
+    pkgconfig \
+    protobuf \
+    python3 \
+    python3-dev \
+    unzip \
+  && python3 -m ensurepip \
+  && rm -rf /usr/lib/python*/ensurepip \
+  && pip3 install --upgrade pip setuptools \
+  && if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi \
+  && if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi \
+  && pip3 install grpcio grpcio-tools \
+  && rm -r /root/.cache \
+  && python3 --version
+
+# Install go
+#
+ENV GOLANG_VERSION 1.10.1
+
+RUN set -eux; \
+	apk add --no-cache --virtual .build-deps \
+		musl-dev \
+		openssl \
+		go \
+	; \
+	export \
+# set GOROOT_BOOTSTRAP such that we can actually build Go
+		GOROOT_BOOTSTRAP="$(go env GOROOT)" \
+# ... and set "cross-building" related vars to the installed system's values so that we create a build targeting the proper arch
+# (for example, if our build host is GOARCH=amd64, but our build env/image is GOARCH=386, our build needs GOARCH=386)
+		GOOS="$(go env GOOS)" \
+		GOARCH="$(go env GOARCH)" \
+		GOHOSTOS="$(go env GOHOSTOS)" \
+		GOHOSTARCH="$(go env GOHOSTARCH)" \
+	; \
+# also explicitly set GO386 and GOARM if appropriate
+# https://github.com/docker-library/golang/issues/184
+	apkArch="$(apk --print-arch)"; \
+	case "$apkArch" in \
+		armhf) export GOARM='6' ;; \
+		x86) export GO386='387' ;; \
+	esac; \
+	\
+	curl -L "https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz" | tar -xz -C /usr/local; \
+	\
+	cd /usr/local/go/src; \
+	./make.bash; \
+	\
+	apk del .build-deps; \
+	\
+	export PATH="/usr/local/go/bin:$PATH"; \
+	go version
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Add utilities: linting, dependency management, grpc
+RUN mkdir -p /go/src \
+  && cd /go/src \
+  && GOPATH=/go go get -u -v github.com/golang/lint/golint \
+  && GOPATH=/go go get -u -v github.com/golang/dep/cmd/dep \
+  && GOPATH=/go go get -u -v github.com/golang/protobuf/proto \
+  && GOPATH=/go go get -u -v github.com/golang/protobuf/protoc-gen-go \
+  && GOPATH=/go go get -u -v golang.org/x/tools/cmd/godoc \
+  && GOPATH=/go go get -u -v gopkg.in/alecthomas/gometalinter.v2 \
+  && du -s -h -c /go
+
+# Build from source so that we can get grpc_cpp_plugin
+RUN git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc \
+  && cd grpc \
+  && git submodule update --init --recursive \
+  && ls -l \
+  && make \
+  && make install \
+  && ls -l /usr/lib \
+  && ls -l /usr/local/lib \
+  && ldconfig -v /usr/local/lib \
+  && cd / \
+  && rm -rf /grpc \
+  && find /usr/local -type f \
+  && du -s -h -c /usr/local/*
+
+ENV GOPATH="/go:/src"
+ENV PATH="/go/bin:${PATH}"
