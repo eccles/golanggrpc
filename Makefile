@@ -112,9 +112,21 @@ functest: unittest .$(API)_container
 
 #------------------------------------------------------------------------------
 #
+# `$ make python` make python client wheel
+#
+.PHONY: _python_local
+_python_local: _unittest_local
+	./buildscripts/python.sh
+
+.PHONY: python
+python: .$(BUILDER)_container
+	time $(DOCKER_EXEC) make _python_local
+
+#------------------------------------------------------------------------------
+#
 #
 #.PHONY: artifacts
-artifacts: functest
+artifacts: functest python
 
 #------------------------------------------------------------------------------
 #

@@ -9,8 +9,5 @@ rm -rf bin/ \
        pkg/ \
        pkg-build/
 
-for m in `find src/${NAME} -path src/${NAME}/vendor -prune -o -name Makefile -print`
-do
-	d=$( dirname $m )
-	( cd $d && make clean )
-done
+( cd src/${NAME}/api && make clean )
+( cd python && make clean )

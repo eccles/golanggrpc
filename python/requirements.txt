@@ -1,0 +1,10 @@
+#
+# Only add third-party packages.
+# Fixing versions of packages that are part of the python standard library
+# will cause problems when using later versions of python
+# https://docs.python.org/3/library/index.html
+#
+# package dependencies
+protobuf>=3
+grpcio>=1.8
+

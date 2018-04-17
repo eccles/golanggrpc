@@ -4,11 +4,9 @@
 #
 NAME=$( cat name  )
 
-for m in `find src/${NAME} -path src/${NAME}/vendor -prune -o -name Makefile -print`
-do
-	d=$( dirname $m )
-	( cd $d && make )
-done
+# generate code from proto definition
+( cd src/${NAME}/api && make )
+( cd python && make dependencies )
 
 # make dependencies
 cd src/${NAME}
