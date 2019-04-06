@@ -22,12 +22,6 @@ then
 	exit 1
 fi
 
-if [ -z "${IMGNAME}" ]
-then
-	log "IMGNAME not set"
-	exit 1
-fi
-
 if [ -z "${OS}" ]
 then
 	log "OS not set"
