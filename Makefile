@@ -12,8 +12,6 @@ BUILD := $(OS)build
 
 BUILD_EXEC := $(DOCKER) exec $(BUILD)
 
-export IMGNAME := ${PREFIX}_${BUILD}
-
 # No C dependencies so compile natively
 export CGO_ENABLED := 0
 
@@ -117,7 +115,8 @@ artifacts: functest python
 	./buildscripts/env.sh
 
 .PHONY: remove_containers
-remove_containers: remove_api remove_build
+remove_containers:
+	./buildscripts/remove_container.sh api build
 
 .PHONY: remove_api
 remove_api: .env
