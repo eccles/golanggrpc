@@ -1,5 +1,0 @@
-FROM golanggrpc_alpinebase
-
-ADD . /src
-
-WORKDIR /src

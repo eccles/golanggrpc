@@ -1,9 +1,10 @@
 package server
 
 import (
-	"ec_golanggrpc/api"
 	"fmt"
 	"net"
+
+	"github.com/eccles/golanggrpc/ec_golanggrpc/api"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"

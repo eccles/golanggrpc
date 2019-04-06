@@ -1,23 +1,16 @@
 package main
 
 import (
-	"flag"
-	"os"
-
 	log "github.com/sirupsen/logrus"
 
-	"ec_golanggrpc/client"
-	"ec_golanggrpc/params"
+	"github.com/eccles/golanggrpc/ec_golanggrpc/params"
+	"github.com/eccles/golanggrpc/ec_golanggrpc/server"
 )
 
 var parameterMap = params.ParameterMap{
 	"Debug": {
 		Default: "false",
 		Desc:    "Output debug statements to log",
-	},
-	"Host": {
-		Default: "",
-		Desc:    "Hostname",
 	},
 	"Port": {
 		Default: "8080",
@@ -39,23 +32,12 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	host, err := params.EnvString(parms, "Host")
-	if err != nil {
-		log.Panicf("Error %v", err)
-	}
 	port, err := params.EnvInt(parms, "Port")
 	if err != nil {
 		log.Panicf("Error %v", err)
 	}
-	cmd := flag.String("c", "Echo", "Command to execute")
 
-	log.Infof("Cmd %s", *cmd)
 	log.Info("Debug ", debug)
-	log.Info("Host ", host)
 	log.Info("Port ", port)
-	log.Info("Execute")
-
-	if client.Execute(host, port, cmd) == false {
-		os.Exit(1)
-	}
+	server.Execute(port)
 }

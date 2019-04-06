@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 # 
 # returns python3 repo to pristine state
 #

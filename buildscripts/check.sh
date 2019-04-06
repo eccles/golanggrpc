@@ -1,12 +1,11 @@
-#!/bin/sh -e
+#!/bin/sh
 # 
 # Statically check the code
 #
+set -e
+cd src
 NAME=$( cat name )
-
-for f in `find src/${NAME} -path src/${NAME}/vendor -prune -o -name '*.go' -print`
-do
-	go fmt $f
-	golint $f
-	go tool vet $f
-done
+gofmt -s -w .
+goimports -w .
+golangci-lint run ./...
+go vet ./...

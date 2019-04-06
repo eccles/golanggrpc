@@ -11,7 +11,7 @@ remove() {
 	do
 		docker rmi -f $img
 	done
-	rm -f .${BUILDER}${1}_container
+	rm -f .${OS}${1}_container
 }
 
 remove
