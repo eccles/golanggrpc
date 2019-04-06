@@ -4,17 +4,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-alpinebase
-  alpine:
+  alpinebuild:
     build:
       context: .
-      dockerfile: Dockerfile-alpine
+      dockerfile: Dockerfile-alpinebuild
+      args:
+        - USER_ID
+        - GROUP_ID
     command: tail -f /dev/null
+    user: ${USERID}
     environment:
       - EC_GOLANGGRPC_DEBUG=true
     tty: true
     stdin_open: true
     volumes:
-      - .:/src
+      - .:/home/builder/src
   alpineapi:
     build:
       context: .

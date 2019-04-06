@@ -1,5 +1,6 @@
-#!/bin/sh -ex
+#!/bin/sh
 # 
 # Makes python client wheel
 #
-(cd python && make )
+set -e
+(cd src/python && make )

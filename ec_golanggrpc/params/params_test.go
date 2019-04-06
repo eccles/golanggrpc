@@ -40,11 +40,11 @@ var badParameterMap = ParameterMap{
 	},
 }
 
-type args struct {
-	boolean bool
-	integer int
-	text    string
-}
+// type args struct {
+// boolean bool
+// integer int
+// text    string
+// }
 
 func TestParamsDefaults(t *testing.T) {
 	os.Unsetenv(fmt.Sprintf("%s_%s", envTag, "BOOLEAN"))

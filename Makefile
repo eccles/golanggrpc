@@ -1,20 +1,24 @@
 #
-BASEDIR := $(shell basename `pwd` )
-PREFIX := $(BASEDIR)${BUILDID}
+NAME := $(shell cat name )
+PREFIX := $(NAME)${BUILDID}
 
 DOCKER_COMPOSE := docker-compose -p $(PREFIX)
 export DOCKER := $(DOCKER_COMPOSE) -f docker-compose.yaml
 
-export BUILDER ?= alpine
-API := $(BUILDER)api
-BASE := $(BUILDER)base
+export OS ?= alpine
+API := $(OS)api
+BASE := $(OS)base
+BUILD := $(OS)build
 
-DOCKER_EXEC := $(DOCKER) exec -T $(BUILDER)
+BUILD_EXEC := $(DOCKER) exec $(BUILD)
 
-export IMGNAME := ${PREFIX}_${BUILDER}
+export IMGNAME := ${PREFIX}_${BUILD}
 
 # No C dependencies so compile natively
 export CGO_ENABLED := 0
+
+# Where to put binaries
+export GOBIN := ~/bin
 
 #------------------------------------------------------------------------------
 #
@@ -23,14 +27,8 @@ export CGO_ENABLED := 0
 #
 # Entry points into the docker build image are correspondingly (for example):
 #
-# Dependencies:
-#
-#     unittest_local -> _check_local
-#     package_local -> _check_local
-#
 # To start from scratch
 #
-#     make remove_container
 #     make clean
 #
 # Do not make any _local targets on your development environment. They are
@@ -39,88 +37,71 @@ export CGO_ENABLED := 0
 #------------------------------------------------------------------------------
 
 .PHONY: all
-all: remove_container clean artifacts
+all: clean .env artifacts
 
 #------------------------------------------------------------------------------
 #
 # `make clean` cleans all generated files from container
 #
-.PHONY: _clean_local
-_clean_local:
-	./buildscripts/clean.sh
-
 .PHONY: clean
-clean: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _clean_local
+clean: remove_containers
+	./buildscripts/clean.sh
 
 #------------------------------------------------------------------------------
 #
 # `$ make dependencies`
 #
-.PHONY: _dependencies_local
-_dependencies_local:
-	./buildscripts/dependencies.sh
-
 .PHONY: dependencies
-dependencies: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _dependencies_local
+dependencies: build
+	$(BUILD_EXEC) ./src/buildscripts/dependencies.sh
 
 #------------------------------------------------------------------------------
 #
 # `$ make check` statically check the code
 #
-.PHONY: _check_local
-_check_local: _dependencies_local
-	./buildscripts/check.sh
-
 .PHONY: check
-check: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _check_local
-
-#------------------------------------------------------------------------------
-#
-# `$ make compile` compile Golang code
-#
-.PHONY: _compile_local
-_compile_local: _check_local
-	./buildscripts/compile.sh
-
-.PHONY: compile
-compile: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _compile_local
+check: dependencies
+	$(BUILD_EXEC) ./src/buildscripts/check.sh
 
 #------------------------------------------------------------------------------
 #
 # `$ make unittest` execute any unittests
 #
-.PHONY: _unittest_local
-_unittest_local: _compile_local
-	./buildscripts/unittest.sh
-
 .PHONY: unittest
-unittest: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _unittest_local
+unittest: check
+	$(BUILD_EXEC) ./src/buildscripts/unittest.sh
 
 #------------------------------------------------------------------------------
 #
-## `$ make functest` functional test using binaries
+# `$ make compile` compile Golang code
+#
+.PHONY: compile
+compile: unittest
+	$(BUILD_EXEC) ./src/buildscripts/compile.sh
+
+#------------------------------------------------------------------------------
+#
+# `make shell` shell into build container
+#
+.PHONY: shell
+shell: build
+	$(BUILD_EXEC) /bin/bash
+
+#------------------------------------------------------------------------------
+#
+# `make functest` functional test using binaries
 #
 #.PHONY: functest
-functest: unittest .$(API)_container
-	time $(DOCKER_EXEC) ./buildscripts/functest.sh
-	docker logs $(IMGNAME)api_1
+functest: compile api
+	./buildscripts/functest.sh
 
 #------------------------------------------------------------------------------
 #
-# `$ make python` make python client wheel
+# `make python` make python client wheel
 #
-.PHONY: _python_local
-_python_local: _unittest_local
-	./buildscripts/python.sh
-
 .PHONY: python
-python: .$(BUILDER)_container
-	time $(DOCKER_EXEC) make _python_local
+python: build
+	$(BUILD_EXEC) ./src/buildscripts/python.sh
 
 #------------------------------------------------------------------------------
 #
@@ -132,20 +113,39 @@ artifacts: functest python
 #
 # docker dependencies
 #
-.PHONY: remove_container
-remove_container:
+.env:
+	./buildscripts/env.sh
+
+.PHONY: remove_containers
+remove_containers: remove_api remove_build
+
+.PHONY: remove_api
+remove_api: .env
 	./buildscripts/remove_container.sh api
 
 .PHONY: remove_base
-remove_base:
+remove_base: .env
 	./buildscripts/remove_container.sh base
 
-.$(API)_container: Dockerfile-$(API) docker-compose.yaml
-	./buildscripts/create_container.sh api
+.PHONY: remove_build
+remove_build: .env
+	./buildscripts/remove_container.sh build
 
-.$(BASE)_container: Dockerfile-$(BASE) docker-compose.yaml
-	./buildscripts/create_container.sh base
+.PHONY: api
+api: .$(API)_container
 
-.$(BUILDER)_container: .$(BASE)_container Dockerfile-$(BUILDER) docker-compose.yaml
-	./buildscripts/create_container.sh
+.PHONY: base
+base: .$(BASE)_container
+
+.PHONY: build
+build: .$(BUILD)_container
+
+.$(API)_container: .env Dockerfile-$(API) docker-compose.yaml
+	./buildscripts/create_container.sh $(API)
+
+.$(BASE)_container: .env Dockerfile-$(BASE) docker-compose.yaml
+	./buildscripts/create_container.sh $(BASE)
+
+.$(BUILD)_container: .env .$(BASE)_container Dockerfile-$(BUILD) docker-compose.yaml
+	./buildscripts/create_container.sh $(BUILD)
 

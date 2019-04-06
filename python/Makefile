@@ -9,18 +9,10 @@ all:  clean artifacts
 
 #------------------------------------------------------------------------------
 #
-# `$ make dependencies` 
-#
-.PHONY: dependencies
-dependencies:
-	./buildscripts/dependencies.sh
-
-#------------------------------------------------------------------------------
-#
 # `$ make wheel` makes wheel
 #
 .PHONY: wheel
-wheel: dependencies
+wheel:
 	./buildscripts/wheel.sh
 
 #------------------------------------------------------------------------------

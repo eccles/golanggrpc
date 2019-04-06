@@ -2,8 +2,6 @@ FROM scratch
 
 WORKDIR /src
 
-COPY bin/ec_golanggrpcserver .
+COPY bin/server .
 
-EXPOSE 8080
-
-CMD [ "./ec_golanggrpcserver" ]
+CMD [ "./server" ]

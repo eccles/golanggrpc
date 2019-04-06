@@ -1,9 +1,11 @@
 # Test binary, build with `go test -c`
-*.test
+.env
 
 # Vim
 *.swp
 
+.bash_history
+.cache/
 # build artifacts
 bin/
 htmlcov/
@@ -12,6 +14,3 @@ pkg-build/
 .*_container
 python/ec_golanggrpc/api_pb2*.py
 python/ec_golanggrpc/__pycache__
-src/ec_golanggrpc/api/*.go
-src/ec_golanggrpc/vendor/
-src/ec_golanggrpc/Go*

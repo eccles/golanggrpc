@@ -1,97 +1,124 @@
 FROM alpine:3.7
 
-# Install dependencies and python3
-RUN apk update && apk add --no-cache \
-    autoconf \
-    automake \
-    bash \
-    build-base \
-    ca-certificates \
-    curl \
-    fakeroot \
-    gcc \
-    git \
-    libtool \
-    make \
-    pkgconfig \
-    protobuf \
-    python3 \
-    python3-dev \
-    unzip \
+# Install utilities, protobuf and python3
+RUN apk update \
+  && apk add --no-cache \
+      bash \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      make \
+      protobuf \
+      python3 \
+      unzip \
+      zip \
   && python3 -m ensurepip \
   && rm -rf /usr/lib/python*/ensurepip \
-  && pip3 install --upgrade pip setuptools \
+  && pip3 install --upgrade pip setuptools wheel \
   && if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi \
   && if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi \
-  && pip3 install grpcio grpcio-tools \
-  && rm -r /root/.cache \
-  && python3 --version
+  && python3 --version \
+  && protoc --version \
+  && which protoc
+
+# Install python3 grpcio
+RUN apk update \
+  && apk add --no-cache --virtual .build-deps \
+      build-base \
+      gcc \
+      python3-dev \
+  && pip3 install grpcio grpcio-tools protobuf \
+  && apk del .build-deps
+
+WORKDIR /usr
+
+# This is only needed for the various proto files that should come with the protobuf 
+# package on alpine but don't.
+RUN PROTOC_VERSION=`protoc --version | cut -d ' ' -f2` \
+   && PROTOC_ZIP=protoc-${PROTOC_VERSION}-linux-x86_64.zip \
+   && PROTOC_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/ \
+   && curl -OL ${PROTOC_URL}/${PROTOC_ZIP} \
+   && unzip -n ${PROTOC_ZIP} \
+   && rm -f readme.txt ${PROTOC_ZIP}
 
 # Install go
 #
-ENV GOLANG_VERSION 1.11.4
-
+ENV GOLANG_VERSION 1.12.1
+#
 RUN set -eux; \
-	apk add --no-cache --virtual .build-deps \
-		musl-dev \
-		openssl \
-		go \
-	; \
-	export \
+  apk add --no-cache --virtual .build-deps \
+       musl-dev \
+       openssl \
+       go \
+  ; \
+  export \
 # set GOROOT_BOOTSTRAP such that we can actually build Go
-		GOROOT_BOOTSTRAP="$(go env GOROOT)" \
+    GOROOT_BOOTSTRAP="$(go env GOROOT)" \
 # ... and set "cross-building" related vars to the installed system's values so that we create a build targeting the proper arch
 # (for example, if our build host is GOARCH=amd64, but our build env/image is GOARCH=386, our build needs GOARCH=386)
-		GOOS="$(go env GOOS)" \
-		GOARCH="$(go env GOARCH)" \
-		GOHOSTOS="$(go env GOHOSTOS)" \
-		GOHOSTARCH="$(go env GOHOSTARCH)" \
-	; \
+    GOOS="$(go env GOOS)" \
+    GOARCH="$(go env GOARCH)" \
+    GOHOSTOS="$(go env GOHOSTOS)" \
+    GOHOSTARCH="$(go env GOHOSTARCH)" \
+  ; \
 # also explicitly set GO386 and GOARM if appropriate
 # https://github.com/docker-library/golang/issues/184
-	apkArch="$(apk --print-arch)"; \
-	case "$apkArch" in \
-		armhf) export GOARM='6' ;; \
-		x86) export GO386='387' ;; \
-	esac; \
-	\
-	curl -L "https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz" | tar -xz -C /usr/local; \
-	\
-	cd /usr/local/go/src; \
-	./make.bash; \
-	\
-	apk del .build-deps; \
-	\
-	export PATH="/usr/local/go/bin:$PATH"; \
-	go version
+  apkArch="$(apk --print-arch)"; \
+    case "$apkArch" in \
+      armhf) export GOARM='6' ;; \
+      x86) export GO386='387' ;; \
+    esac; \
+    \
+    curl -L "https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz" | tar -xz -C /usr/local; \
+    \
+    cd /usr/local/go/src; \
+    ./make.bash; \
+    \
+    apk del .build-deps; \
+    \
+    export PATH="/usr/local/go/bin:$PATH"; \
+    which go; \
+    go version
 
-ENV PATH="/usr/local/go/bin:${PATH}"
-
-# Add utilities: linting, dependency management, grpc
-RUN mkdir -p /go/src \
-  && cd /go/src \
-  && GOPATH=/go go get -u -v github.com/golang/lint/golint \
-  && GOPATH=/go go get -u -v github.com/golang/dep/cmd/dep \
-  && GOPATH=/go go get -u -v github.com/golang/protobuf/proto \
-  && GOPATH=/go go get -u -v github.com/golang/protobuf/protoc-gen-go \
-  && GOPATH=/go go get -u -v golang.org/x/tools/cmd/godoc \
-  && GOPATH=/go go get -u -v gopkg.in/alecthomas/gometalinter.v2 \
-  && du -s -h -c /go
-
-# Build from source so that we can get grpc_cpp_plugin
-RUN git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc \
+ENV PATH /usr/local/go/bin:${PATH}
+#
+## Build grpc from source so that we can get grpc_cpp_plugin
+RUN set -eux\
+  && apk update \
+  && apk add --no-cache --virtual .build-deps \
+    build-base \
+    automake \
+    autoconf \
+    libtool \
+    zlib-dev \
+  && git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc \
   && cd grpc \
   && git submodule update --init --recursive \
-  && ls -l \
   && make \
   && make install \
-  && ls -l /usr/lib \
-  && ls -l /usr/local/lib \
   && ldconfig -v /usr/local/lib \
-  && cd / \
-  && rm -rf /grpc \
-  && find /usr/local -type f \
+  && cd - \
+  && rm -rf grpc \
+  && apk del .build-deps \
   && du -s -h -c /usr/local/*
+#
+#
+ENV GO111MODULE=on
+#
+# go-task (replacement for make)
+RUN ["/bin/sh", "-c", "set -o pipefail && curl -s https://taskfile.dev/install.sh | sh"]
 
-ENV GOPATH="/go:/src"
-ENV PATH="/go/bin:${PATH}"
+# Go linter 
+ENV GOLINTER_VERSION=1.15.0
+RUN ["/bin/sh", "-c", \
+   "set -o pipefail && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v${GOLINTER_VERSION}" ]
+#
+RUN GOPATH=/usr/local go get github.com/golang/protobuf/proto \
+  && GOPATH=/usr/local go get github.com/golang/protobuf/protoc-gen-go \
+  && GOPATH=/usr/local go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+  && GOPATH=/usr/local go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+  && GOPATH=/usr/local go get golang.org/x/tools/cmd/goimports \
+  && GOPATH=/usr/local go get -u github.com/go-delve/delve/cmd/dlv
+
+ENV CGO_ENABLED=0

@@ -28,8 +28,8 @@ then
 	exit 1
 fi
 
-if [ -z "${BUILDER}" ]
+if [ -z "${OS}" ]
 then
-	log "BUILDER not set"
+	log "OS not set"
 	exit 1
 fi
