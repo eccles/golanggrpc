@@ -5,12 +5,7 @@ PREFIX := $(NAME)${BUILDID}
 DOCKER_COMPOSE := docker-compose -p $(PREFIX)
 export DOCKER := $(DOCKER_COMPOSE) -f docker-compose.yaml
 
-export OS ?= alpine
-API := $(OS)api
-BASE := $(OS)base
-BUILD := $(OS)build
-
-BUILD_EXEC := $(DOCKER) exec $(BUILD)
+BUILD_EXEC := $(DOCKER) exec build
 
 # No C dependencies so compile natively
 export CGO_ENABLED := 0
@@ -131,20 +126,20 @@ remove_build: .env
 	./buildscripts/remove_container.sh build
 
 .PHONY: api
-api: .$(API)_container
+api: .api_container
 
 .PHONY: base
-base: .$(BASE)_container
+base: .base_container
 
 .PHONY: build
-build: .$(BUILD)_container
+build: .build_container
 
-.$(API)_container: .env Dockerfile-$(API) docker-compose.yaml
-	./buildscripts/create_container.sh $(API)
+.api_container: .env Dockerfile-api docker-compose.yaml
+	./buildscripts/create_container.sh api
 
-.$(BASE)_container: .env Dockerfile-$(BASE) docker-compose.yaml
-	./buildscripts/create_container.sh $(BASE)
+.base_container: .env Dockerfile-base docker-compose.yaml
+	./buildscripts/create_container.sh base
 
-.$(BUILD)_container: .env .$(BASE)_container Dockerfile-$(BUILD) docker-compose.yaml
-	./buildscripts/create_container.sh $(BUILD)
+.build_container: .env .base_container Dockerfile-build docker-compose.yaml
+	./buildscripts/create_container.sh build
 
