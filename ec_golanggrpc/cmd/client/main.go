@@ -3,54 +3,28 @@ package main
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/eccles/golanggrpc/ec_golanggrpc/client"
-	"github.com/eccles/golanggrpc/ec_golanggrpc/params"
 )
 
-var parameterMap = params.ParameterMap{
-	"Debug": {
-		Default: "false",
-		Desc:    "Output debug statements to log",
-	},
-	"Host": {
-		Default: "",
-		Desc:    "Hostname",
-	},
-	"Port": {
-		Default: "8080",
-		Desc:    "Port number",
-	},
-}
-
 func main() {
-	parms := &params.Parameters{
-		EnvTag:     "EC_GOLANGGRPC",
-		Properties: &parameterMap,
-	}
-
-	debug, err := params.EnvBool(parms, "Debug")
-	if err != nil {
-		log.Panicf("Error %v", err)
-	}
-	if debug {
+	loglevel := os.Getenv("GOLANGGRPC_LOGLEVEL")
+	if loglevel == "DEBUG" {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	host, err := params.EnvString(parms, "Host")
+	host := os.Getenv("GOLANGGRPC_HOST")
+	port, err := strconv.Atoi(os.Getenv("GOLANGGRPC_PORT"))
 	if err != nil {
-		log.Panicf("Error %v", err)
-	}
-	port, err := params.EnvInt(parms, "Port")
-	if err != nil {
-		log.Panicf("Error %v", err)
+		log.Panicf("Illegal Port")
 	}
 	cmd := flag.String("c", "Echo", "Command to execute")
 
 	log.Infof("Cmd %s", *cmd)
-	log.Info("Debug ", debug)
+	log.Info("Loglevel ", loglevel)
 	log.Info("Host ", host)
 	log.Info("Port ", port)
 	log.Info("Execute")

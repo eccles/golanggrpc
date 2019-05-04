@@ -2,8 +2,8 @@
 #
 # Runs functional tests as a package
 #
-export EC_GOLANGGRPC_HOST="localhost"
-export EC_GOLANGGRPC_PORT="8080"
+export GOLANGGRPC_HOST="localhost"
+export GOLANGGRPC_PORT="8080"
 
 CLIENT="bin/client"
 echo "----> Test no arguments"

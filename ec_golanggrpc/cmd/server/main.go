@@ -1,43 +1,26 @@
 package main
 
 import (
+	"os"
+	"strconv"
+
 	log "github.com/sirupsen/logrus"
 
-	"github.com/eccles/golanggrpc/ec_golanggrpc/params"
 	"github.com/eccles/golanggrpc/ec_golanggrpc/server"
 )
 
-var parameterMap = params.ParameterMap{
-	"Debug": {
-		Default: "false",
-		Desc:    "Output debug statements to log",
-	},
-	"Port": {
-		Default: "8080",
-		Desc:    "Port number",
-	},
-}
-
 func main() {
-	parms := &params.Parameters{
-		EnvTag:     "EC_GOLANGGRPC",
-		Properties: &parameterMap,
-	}
-
-	debug, err := params.EnvBool(parms, "Debug")
-	if err != nil {
-		log.Panicf("Error %v", err)
-	}
-	if debug {
+	loglevel := os.Getenv("GOLANGGRPC_LOGLEVEL")
+	if loglevel == "DEBUG" {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	port, err := params.EnvInt(parms, "Port")
+	port, err := strconv.Atoi(os.Getenv("GOLANGGRPC_PORT"))
 	if err != nil {
 		log.Panicf("Error %v", err)
 	}
 
-	log.Info("Debug ", debug)
+	log.Info("Loglevel ", loglevel)
 	log.Info("Port ", port)
 	server.Execute(port)
 }
