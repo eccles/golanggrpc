@@ -1,20 +1,23 @@
+---
 version: '3.3'
 services:
   base:
     build:
       context: .
       dockerfile: Dockerfile-base
-  build:
+      args:
+        - REPO
+  builder:
+    depends_on:
+      - base
     build:
       context: .
-      dockerfile: Dockerfile-build
+      dockerfile: Dockerfile-builder
       args:
-        - USER_ID
-        - GROUP_ID
-    command: tail -f /dev/null
-    user: ${USERID}
-    environment:
-      - GOLANGGRPC_LOGLEVEL=DEBUG
+        - GUID
+        - REPO
+        - USER
+        - UUID
     tty: true
     stdin_open: true
     volumes:

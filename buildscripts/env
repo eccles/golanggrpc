@@ -1,0 +1,9 @@
+#
+# this file is sourced
+#
+# Sets user env vars for builder image
+#
+export REPO=${REPO:-$( basename `pwd` )}
+export UUID=$( id -u )
+export GUID=$( id -g )
+export USERID=${UUID}:${GUID}

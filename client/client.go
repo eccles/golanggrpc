@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/eccles/golanggrpc/ec_golanggrpc/api"
+	"github.com/eccles/golanggrpc/api"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"

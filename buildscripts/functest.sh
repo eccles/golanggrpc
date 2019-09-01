@@ -2,8 +2,13 @@
 #
 # Runs functional tests as a package
 #
+. ./buildscripts/docker-check
+set -e
+set -x
+
 export GOLANGGRPC_HOST="localhost"
 export GOLANGGRPC_PORT="8080"
+${DOCKER} up -d api
 
 CLIENT="bin/client"
 echo "----> Test no arguments"
@@ -14,3 +19,4 @@ then
 	echo "Show usage failure"
 fi
 
+${DOCKER} down --remove-orphans

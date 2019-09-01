@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/eccles/golanggrpc/ec_golanggrpc/api"
+	"github.com/eccles/golanggrpc/api"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"

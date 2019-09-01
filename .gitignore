@@ -9,8 +9,8 @@
 # build artifacts
 bin/
 htmlcov/
-pkg/
-pkg-build/
+#pkg/
+#pkg-build/
 .*_container
-python/ec_golanggrpc/api_pb2*.py
-python/ec_golanggrpc/__pycache__
+#python/ec_golanggrpc/api_pb2*.py
+#python/ec_golanggrpc/__pycache__

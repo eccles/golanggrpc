@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# Statically check the code
+# create auto-generated code
 #
 . ./buildscripts/env
 
@@ -13,7 +13,5 @@ then
 	./buildscripts/builder.sh bash -c "cd src && $NAME"
 	exit
 fi
-gofmt -s -w .
-goimports -w .
-golangci-lint run ./...
-go vet ./...
+# generate code from proto definition
+( cd api && make )

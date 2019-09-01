@@ -1,9 +1,7 @@
 #!/bin/sh
 #
-echo "create_container: $*"
-. ./buildscripts/docker-check.sh
+. ./buildscripts/docker-check
 
 # Add containers
-${DOCKER} up --force-recreate --build -d ${1}
-${DOCKER} logs ${NAME}
+${DOCKER} build ${1}
 touch .${1}_container
