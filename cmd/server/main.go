@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/eccles/golanggrpc/ec_golanggrpc/server"
+	"github.com/eccles/golanggrpc/server"
 )
 
 func main() {

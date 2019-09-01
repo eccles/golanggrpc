@@ -1,15 +1,13 @@
 #!/bin/sh
 #
-. ./buildscripts/docker-check.sh
-
-NAME=$(cat name )
-
-# Remove containers
-${DOCKER} down --remove-orphans
+# Remove container
+#
+set -e
+#set -x
+. ./buildscripts/docker-check
 
 remove() {
-	echo $1
-	local name="${NAME}_${1}"
+	local name="${REPO}_${1}"
 	for img in `docker images --all --quiet ${name}`
 	do
 		docker rmi -f $img
@@ -21,3 +19,4 @@ for tag in $*
 do
 	remove $tag
 done
+

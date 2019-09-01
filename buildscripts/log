@@ -1,7 +1,12 @@
 #
-# common methods
+# logging methods
 #
 # this file should be sourced and not executed
 log() {
     echo "`date`: $* ..." >&2
+}
+
+error() {
+	log "$@"
+	exit 1
 }

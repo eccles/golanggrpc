@@ -2,8 +2,17 @@
 # 
 # Unit tests the code and record the coverage
 #
-cd src
+. ./buildscripts/env
+
+NAME=$0
+
+#set -x
 set -e
+if [ "$CONTAINER_NAME" != "${REPO}-base" ]
+then
+	./buildscripts/builder.sh bash -c "cd src && $NAME"
+	exit
+fi
 rm -rf htmlcov
 mkdir htmlcov
 go test ./... -coverprofile /tmp/c.out
@@ -13,4 +22,4 @@ then
 	rm -f /tmp/c.out
 fi
 
-# go test --race ./...
+CGO_ENABLED=1 go test --race ./...

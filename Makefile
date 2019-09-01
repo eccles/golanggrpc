@@ -1,18 +1,3 @@
-#
-NAME := $(shell cat name )
-PREFIX := $(NAME)${BUILDID}
-
-DOCKER_COMPOSE := docker-compose -p $(PREFIX)
-export DOCKER := $(DOCKER_COMPOSE) -f docker-compose.yaml
-
-BUILD_EXEC := $(DOCKER) exec build
-
-# No C dependencies so compile natively
-export CGO_ENABLED := 0
-
-# Where to put binaries
-export GOBIN := ~/bin
-
 #------------------------------------------------------------------------------
 #
 #
@@ -42,19 +27,19 @@ clean: remove_containers
 
 #------------------------------------------------------------------------------
 #
-# `$ make dependencies`
+# `$ make generated`
 #
-.PHONY: dependencies
-dependencies: build
-	$(BUILD_EXEC) ./src/buildscripts/dependencies.sh
+.PHONY: generated
+generated: builder
+	./buildscripts/generated.sh
 
 #------------------------------------------------------------------------------
 #
 # `$ make check` statically check the code
 #
 .PHONY: check
-check: dependencies
-	$(BUILD_EXEC) ./src/buildscripts/check.sh
+check: generated
+	./buildscripts/check.sh
 
 #------------------------------------------------------------------------------
 #
@@ -62,7 +47,7 @@ check: dependencies
 #
 .PHONY: unittest
 unittest: check
-	$(BUILD_EXEC) ./src/buildscripts/unittest.sh
+	./buildscripts/unittest.sh
 
 #------------------------------------------------------------------------------
 #
@@ -70,21 +55,21 @@ unittest: check
 #
 .PHONY: compile
 compile: unittest
-	$(BUILD_EXEC) ./src/buildscripts/compile.sh
+	./buildscripts/compile.sh
 
 #------------------------------------------------------------------------------
 #
-# `make shell` shell into build container
+# `make shell` shell into builder container
 #
 .PHONY: shell
-shell: build
-	$(BUILD_EXEC) /bin/bash
+shell: builder
+	./buildscripts/builder.sh /bin/bash
 
 #------------------------------------------------------------------------------
 #
 # `make functest` functional test using binaries
 #
-#.PHONY: functest
+.PHONY: functest
 functest: compile api
 	./buildscripts/functest.sh
 
@@ -92,38 +77,36 @@ functest: compile api
 #
 # `make python` make python client wheel
 #
-.PHONY: python
-python: build
-	$(BUILD_EXEC) ./src/buildscripts/python.sh
+#.PHONY: python
+#python: builder
+#	./buildscripts/python.sh
 
 #------------------------------------------------------------------------------
 #
 #
-#.PHONY: artifacts
-artifacts: functest python
+#artifacts: functest python
+.PHONY: artifacts
+artifacts: functest
 
 #------------------------------------------------------------------------------
 #
 # docker dependencies
 #
-.env:
-	./buildscripts/env.sh
-
 .PHONY: remove_containers
 remove_containers:
-	./buildscripts/remove_container.sh api build
+	./buildscripts/remove_container.sh api builder
 
 .PHONY: remove_api
-remove_api: .env
+remove_api:
 	./buildscripts/remove_container.sh api
 
 .PHONY: remove_base
-remove_base: .env
+remove_base: remove_builder
 	./buildscripts/remove_container.sh base
 
-.PHONY: remove_build
-remove_build: .env
-	./buildscripts/remove_container.sh build
+.PHONY: remove_builder
+remove_builder:
+	./buildscripts/remove_container.sh builder
 
 .PHONY: api
 api: .api_container
@@ -131,15 +114,15 @@ api: .api_container
 .PHONY: base
 base: .base_container
 
-.PHONY: build
-build: .build_container
+.PHONY: builder
+builder: .base_container .builder_container
 
-.api_container: .env Dockerfile-api docker-compose.yaml
+.api_container: Dockerfile-api docker-compose.yaml
 	./buildscripts/create_container.sh api
 
-.base_container: .env Dockerfile-base docker-compose.yaml
+.base_container: Dockerfile-base docker-compose.yaml
 	./buildscripts/create_container.sh base
 
-.build_container: .env .base_container Dockerfile-build docker-compose.yaml
-	./buildscripts/create_container.sh build
+.builder_container: Dockerfile-builder docker-compose.yaml
+	./buildscripts/create_container.sh builder
 

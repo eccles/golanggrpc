@@ -1,0 +1,20 @@
+ARG REPO=golanggrpc
+
+FROM ${REPO}_base
+
+ARG UUID
+ARG GUID
+ARG USER=builder
+
+ENV USER=${USER}
+ENV HOME=/home/${USER}
+ENV SRC=${HOME}/src
+ENV GOPATH=${HOME}/go
+ENV GOCACHE=${GOPATH}/.cache/go-build
+ENV CGO_ENABLED=0
+ENV PATH=${GOPATH}/bin:${PATH}
+
+RUN groupadd -g ${GUID} ${USER} \
+  && useradd -d ${HOME} -g ${USER} -m -u ${UUID} ${USER}
+
+WORKDIR ${HOME}

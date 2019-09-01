@@ -2,8 +2,15 @@
 # 
 # Compile all the code
 #
-cd src
-set -e
-NAME=$( cat name )
+. ./buildscripts/env
 
+NAME=$0
+
+#set -x
+set -e
+if [ "$CONTAINER_NAME" != "${REPO}-base" ]
+then
+	./buildscripts/builder.sh bash -c "cd src && $NAME"
+	exit
+fi
 GOBIN=`pwd`/bin go install ./...
