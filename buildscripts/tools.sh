@@ -20,6 +20,7 @@ GRPC_GATEWAY_VERSION=1.11.1
 go get \
 	golang.org/x/tools/cmd/goimports \
 	github.com/golang/protobuf/protoc-gen-go@v${PROTOBUF_VERSION} \
+	github.com/grpc-ecosystem/grpc-gateway@v${GRPC_GATEWAY_VERSION} \
 	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@v${GRPC_GATEWAY_VERSION} \
 	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger@v${GRPC_GATEWAY_VERSION} \
 	github.com/rakyll/statik \
