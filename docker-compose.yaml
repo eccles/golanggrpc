@@ -18,6 +18,7 @@ services:
         - REPO
         - USER
         - UUID
+        - GODIR
     tty: true
     stdin_open: true
     volumes:

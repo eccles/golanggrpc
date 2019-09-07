@@ -10,10 +10,12 @@ NAME=$0
 set -e
 if [ "$CONTAINER_NAME" != "${REPO}-base" ]
 then
-	./buildscripts/builder.sh bash -c "cd src && $NAME"
+	./buildscripts/builder.sh bash -c "cd ${SRC} && $NAME"
 	exit
 fi
-gofmt -s -w .
+go mod tidy
+go mod verify
+gofmt -l -s -w .
 goimports -w .
 golangci-lint run ./...
 go vet ./...

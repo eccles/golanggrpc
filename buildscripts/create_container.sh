@@ -2,6 +2,8 @@
 #
 . ./buildscripts/docker-check
 
-# Add containers
-${DOCKER} build ${1}
-touch .${1}_container
+if [ -z "$CONTAINER_NAME" ]
+then
+	# Add containers
+	${DOCKER} build ${1}
+fi

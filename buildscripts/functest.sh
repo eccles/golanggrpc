@@ -4,7 +4,6 @@
 #
 . ./buildscripts/docker-check
 set -e
-set -x
 
 export GOLANGGRPC_HOST="localhost"
 export GOLANGGRPC_PORT="8080"

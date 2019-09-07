@@ -8,27 +8,54 @@ Work In Progress - please do not use
 
     This repo uses docker as an isolation environment. Install on your development host:
 
-        - curl
         - make
         - docker-ce
         - docker-compose
 
-    To make:
+## On first cloning this repo (or pulling a later version)
 
-        make
+```bash
+make builder
+make tools
+```
 
-    The first time this command is invoked will build a large base image for the build environment. This is cached so
-    subsequent invokations are much quicker.
+Cached go artifacts are in /tmp/$USER-$REPONAME/go
 
-    To make changes, edit files and execute:
+## Workflow:
 
-        make unittest
+Make changes to code and then:
 
-    For a more comprehensive description see buildscripts/README.md.
+```bash
+make compile
+```
+
+Unittest:
+
+```bash
+make unittest
+```
+
+## To make all artifacts including api container:
+
+```bash
+make artifacts
+```
+
+## Clean codebase
+
+```bash
+make clean
+```
+
+## Functional tests against running api container
+
+```bash
+make functest
+```
 
 # Usage
 
-    Currently this repo only supports one message called 'Echo'.
+    Currently this repo only supports one service called 'Echo'.
 
     See buildscripts/functest.sh for execution of the client that connects to a server running in a container.
     The container is defined in Dockerfile-aplineapi and created using the docker-compose.yaml file.
