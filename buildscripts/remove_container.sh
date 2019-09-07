@@ -6,13 +6,17 @@ set -e
 #set -x
 . ./buildscripts/docker-check
 
+if [ -n "$CONTAINER_NAME" ]
+then
+	exit 0
+fi
+
 remove() {
 	local name="${REPO}_${1}"
 	for img in `docker images --all --quiet ${name}`
 	do
 		docker rmi -f $img
 	done
-	rm -f .${1}_container
 }
 
 for tag in $*

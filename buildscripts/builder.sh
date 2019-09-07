@@ -3,16 +3,19 @@
 # Executes a command inside the builder container
 #
 . ./buildscripts/env
-#set -x
 NAME=$( basename $0 )
-if [ ! -d "${HOME}/go" ]
+
+# Cache go dependencies externally
+# mounted in ${GODIR} inside builder container
+if [ ! -d "${TMPGODIR}" ]
 then
-	mkdir ${HOME}/go
+	mkdir -p ${TMPGODIR}
 fi
+
 docker run \
     --rm -it \
-    -v $(pwd):${HOME}/src \
-    -v ${HOME}/go:${HOME}/go \
+    -v $(pwd):${HOME}/${SRC} \
+    -v ${TMPGODIR}:${GODIR} \
     -u ${USERID} \
     ${REPO}_builder \
     "$@"

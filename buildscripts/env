@@ -3,7 +3,16 @@
 #
 # Sets user env vars for builder image
 #
+if [ -z "$USER" ]
+then
+	echo "USER is undefined"
+	exit 1
+fi
+
 export REPO=${REPO:-$( basename `pwd` )}
 export UUID=$( id -u )
 export GUID=$( id -g )
 export USERID=${UUID}:${GUID}
+export SRC=src
+export GODIR=/opt/go
+export TMPGODIR=/tmp/${USER}-${REPO}-go

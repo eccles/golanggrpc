@@ -1,36 +1,41 @@
 #------------------------------------------------------------------------------
 #
-#
-# Requires docker-ce and docker-compose
+# Requires make, docker-ce and docker-compose
 #
 # Entry points into the docker build image are correspondingly (for example):
 #
-# To start from scratch
+# To prepare after cloning or pulling from upstream:
 #
-#     make clean
-#
-# Do not make any _local targets on your development environment. They are
-# only for internal use by the make system.
+#     make builder
 #
 #------------------------------------------------------------------------------
-
+#
+# '$ make clean' - regenerate everything from scratch
 .PHONY: all
-all: clean .env artifacts
+all: clean artifacts
 
 #------------------------------------------------------------------------------
 #
 # `make clean` cleans all generated files from container
 #
 .PHONY: clean
-clean: remove_containers
+clean:
 	./buildscripts/clean.sh
 
 #------------------------------------------------------------------------------
 #
-# `$ make generated`
+# `$ make tools` - install additional tools
+#
+.PHONY: tools
+tools:
+	./buildscripts/tools.sh
+
+#------------------------------------------------------------------------------
+#
+# `$ make generated` - generate auto-generated code
 #
 .PHONY: generated
-generated: builder
+generated:
 	./buildscripts/generated.sh
 
 #------------------------------------------------------------------------------
@@ -46,7 +51,7 @@ check: generated
 # `$ make unittest` execute any unittests
 #
 .PHONY: unittest
-unittest: check
+unittest:
 	./buildscripts/unittest.sh
 
 #------------------------------------------------------------------------------
@@ -54,7 +59,7 @@ unittest: check
 # `$ make compile` compile Golang code
 #
 .PHONY: compile
-compile: unittest
+compile:
 	./buildscripts/compile.sh
 
 #------------------------------------------------------------------------------
@@ -62,7 +67,7 @@ compile: unittest
 # `make shell` shell into builder container
 #
 .PHONY: shell
-shell: builder
+shell:
 	./buildscripts/builder.sh /bin/bash
 
 #------------------------------------------------------------------------------
@@ -86,19 +91,41 @@ functest: compile api
 #
 #artifacts: functest python
 .PHONY: artifacts
-artifacts: functest
+artifacts: check unittest compile api
 
 #------------------------------------------------------------------------------
 #
-# docker dependencies
+# api docker images
 #
-.PHONY: remove_containers
-remove_containers:
-	./buildscripts/remove_container.sh api builder
+.PHONY: remove_apis
+remove_apis:
+	./buildscripts/remove_container.sh api
 
 .PHONY: remove_api
 remove_api:
 	./buildscripts/remove_container.sh api
+
+.PHONY: api
+api: Dockerfile-api docker-compose.yaml
+	./buildscripts/create_container.sh api
+
+#------------------------------------------------------------------------------
+#
+# builder images
+#
+.PHONY: base
+base: Dockerfile-base docker-compose.yaml
+	./buildscripts/create_container.sh base
+
+.PHONY: builder
+builder: base Dockerfile-builder docker-compose.yaml
+	./buildscripts/create_container.sh builder
+
+.PHONY: purge
+purge:
+	./buildscripts/remove_container.sh builder
+	./buildscripts/remove_container.sh base
+	./buildscripts/purge.sh
 
 .PHONY: remove_base
 remove_base: remove_builder
@@ -107,22 +134,4 @@ remove_base: remove_builder
 .PHONY: remove_builder
 remove_builder:
 	./buildscripts/remove_container.sh builder
-
-.PHONY: api
-api: .api_container
-
-.PHONY: base
-base: .base_container
-
-.PHONY: builder
-builder: .base_container .builder_container
-
-.api_container: Dockerfile-api docker-compose.yaml
-	./buildscripts/create_container.sh api
-
-.base_container: Dockerfile-base docker-compose.yaml
-	./buildscripts/create_container.sh base
-
-.builder_container: Dockerfile-builder docker-compose.yaml
-	./buildscripts/create_container.sh builder
 

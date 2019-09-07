@@ -4,17 +4,19 @@ FROM ${REPO}_base
 
 ARG UUID
 ARG GUID
-ARG USER=builder
+ARG USER
+ARG GODIR
 
 ENV USER=${USER}
 ENV HOME=/home/${USER}
-ENV SRC=${HOME}/src
-ENV GOPATH=${HOME}/go
-ENV GOCACHE=${GOPATH}/.cache/go-build
+ENV GOPATH=${GODIR}
+ENV GOCACHE=${GODIR}/.cache/pkg-build
 ENV CGO_ENABLED=0
 ENV PATH=${GOPATH}/bin:${PATH}
 
 RUN groupadd -g ${GUID} ${USER} \
-  && useradd -d ${HOME} -g ${USER} -m -u ${UUID} ${USER}
+  && useradd -d ${HOME} -g ${USER} -m -u ${UUID} ${USER} \
+  && mkdir -p ${GOPATH} \
+  && chmod -R 777 ${GOPATH}
 
 WORKDIR ${HOME}
