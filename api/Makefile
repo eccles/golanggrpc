@@ -5,8 +5,8 @@
 
 # PYTARGET := $(PYNAMEDIR)/api_pb2.py
 
-.PHONY: compile
-compile: api.pb.go
+.PHONY: create
+create: api.pb.go
 
 #compile: protoc_gen_go api.pb.go $(PYTARGET)
 
@@ -21,7 +21,3 @@ clean:
 	rm -f api.pb.go
 # 	rm -f $(PYNAMEDIR)/api_pb2*.py
 # 	rm -rf $(PYNAMEDIR)/__pycache__
-
-#.PHONY: protoc_gen_go
-#protoc_gen_go:
-#	go get github.com/golang/protobuf/protoc-gen-go

@@ -3,16 +3,9 @@
 # Unit tests the code and record the coverage
 #
 . ./buildscripts/env
-
-NAME=$0
-
-#set -x
+. ./buildscripts/_run_in_container_if_necessary
+#
 set -e
-if [ "$CONTAINER_NAME" != "${REPO}-base" ]
-then
-	./buildscripts/builder.sh bash -c "cd ${SRC} && $NAME"
-	exit
-fi
 rm -rf htmlcov
 mkdir htmlcov
 go test ./... -coverprofile /tmp/c.out
