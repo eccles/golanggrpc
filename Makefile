@@ -19,7 +19,7 @@ all: clean artifacts
 # `make clean` cleans all generated files from container
 #
 .PHONY: clean
-clean:
+clean: remove_api
 	./buildscripts/clean.sh
 
 #------------------------------------------------------------------------------

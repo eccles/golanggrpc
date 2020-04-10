@@ -4,12 +4,13 @@
 #
 set -e
 #set -x
-. ./buildscripts/docker-check
 
 if [ -n "$CONTAINER_NAME" ]
 then
 	exit 0
 fi
+
+. ./buildscripts/docker-check
 
 remove() {
 	local name="${REPO}_${1}"

@@ -5,13 +5,13 @@
 
 # PYTARGET := $(PYNAMEDIR)/api_pb2.py
 
-.PHONY: compile
-compile: api.pb.go
+.PHONY: create
+create: api.pb.go
 
 #compile: protoc_gen_go api.pb.go $(PYTARGET)
 
-api.pb.go: api.proto
-	protoc -I . --go_out=plugins=grpc:. $<
+api.pb.go: api.go api.proto
+	go generate
 
 # $(PYTARGET): api.proto
 # 	python3 -m grpc_tools.protoc -I . --python_out=$(PYDIR) --grpc_python_out=$(PYDIR) $<
@@ -21,7 +21,3 @@ clean:
 	rm -f api.pb.go
 # 	rm -f $(PYNAMEDIR)/api_pb2*.py
 # 	rm -rf $(PYNAMEDIR)/__pycache__
-
-#.PHONY: protoc_gen_go
-#protoc_gen_go:
-#	go get github.com/golang/protobuf/protoc-gen-go

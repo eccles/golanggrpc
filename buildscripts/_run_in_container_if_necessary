@@ -1,0 +1,14 @@
+# 
+# this file is sourced
+# 
+# Run command in container if not already doing so
+#
+. ./buildscripts/env
+
+NAME=$0
+
+if [ "$CONTAINER_NAME" != "${REPO}-base" ]
+then
+	./buildscripts/builder.sh bash -c "cd ${SRC} && $NAME"
+	exit
+fi
