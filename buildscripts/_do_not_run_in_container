@@ -1,0 +1,11 @@
+# 
+# this file is sourced
+# 
+# Do not run command in container
+#
+. ./buildscripts/env
+
+if [ -n "$CONTAINER_NAME" ]
+then
+	exit
+fi

@@ -2,17 +2,14 @@
 # 
 # Unit tests the code and record the coverage
 #
-. ./buildscripts/env
 . ./buildscripts/_run_in_container_if_necessary
 #
 set -e
-rm -rf htmlcov
-mkdir htmlcov
-go test ./... -coverprofile /tmp/c.out
-if [ -s /tmp/c.out ]
+cd source
+rm -rf ${HTMLCOV}
+mkdir -p ${HTMLCOV}
+CGO_ENABLED=1 go test --race ./... -coverprofile ${HTMLCOV}/c.out
+if [ -s ${HTMLCOV}/c.out ]
 then
-	go tool cover -html=/tmp/c.out -o htmlcov/all.html
-	rm -f /tmp/c.out
+	go tool cover -html=${HTMLCOV}/c.out -o ${HTMLCOV}/all.html
 fi
-
-CGO_ENABLED=1 go test --race ./...

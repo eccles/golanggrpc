@@ -74,9 +74,9 @@ shell:
 #
 # `make functest` functional test using binaries
 #
-.PHONY: functest
-functest: compile api
-	./buildscripts/functest.sh
+# .PHONY: functest
+# functest: compile api
+# 	./buildscripts/functest.sh
 
 #------------------------------------------------------------------------------
 #
@@ -106,7 +106,7 @@ remove_api:
 	./buildscripts/remove_container.sh api
 
 .PHONY: api
-api: Dockerfile-api docker-compose.yaml
+api: docker/Dockerfile-api docker-compose.yaml
 	./buildscripts/create_container.sh api
 
 #------------------------------------------------------------------------------
@@ -114,11 +114,11 @@ api: Dockerfile-api docker-compose.yaml
 # builder images
 #
 .PHONY: base
-base: Dockerfile-base docker-compose.yaml
+base: docker/Dockerfile-base docker-compose.yaml
 	./buildscripts/create_container.sh base
 
 .PHONY: builder
-builder: base Dockerfile-builder docker-compose.yaml
+builder: base docker/Dockerfile-builder docker-compose.yaml
 	./buildscripts/create_container.sh builder
 
 .PHONY: purge

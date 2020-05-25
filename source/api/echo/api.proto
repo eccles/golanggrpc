@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-package api;
+package api.echo;
 
 service GolangGRPC {
 	rpc Echo(GRPCRequest) returns(GRPCStatus) {};

@@ -17,5 +17,5 @@ fi
 docker --version
 
 # BUILDID is usually set by CI
-DOCKER_COMPOSE="docker-compose -p ${REPO}${BUILDID}"
+DOCKER_COMPOSE="docker-compose -p ${REPO_NAME}${BUILDID}"
 DOCKER="${DOCKER_COMPOSE} -f docker-compose.yaml"
