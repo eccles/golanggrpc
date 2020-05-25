@@ -58,5 +58,5 @@ make functest
     Currently this repo only supports one service called 'Echo'.
 
     See buildscripts/functest.sh for execution of the client that connects to a server running in a container.
-    The container is defined in Dockerfile-aplineapi and created using the docker-compose.yaml file.
+    The container is defined in Dockerfile-alpineapi and created using the docker-compose.yaml file.
 

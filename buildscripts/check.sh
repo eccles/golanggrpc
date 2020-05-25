@@ -4,7 +4,7 @@
 #
 . ./buildscripts/_run_in_container_if_necessary
 
-set -e
+cd source
 go mod tidy
 go mod verify
 gofmt -l -s -w .

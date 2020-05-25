@@ -2,6 +2,8 @@
 # 
 # Makes python client wheel
 #
+. ./buildscripts/_run_in_container_if_necessary
+
 set -e
 . ./buildscripts/env
-(cd ${SRC}/python && make )
+(cd python && make )

@@ -2,18 +2,12 @@
 #
 # Remove container
 #
-set -e
-#set -x
-
-if [ -n "$CONTAINER_NAME" ]
-then
-	exit 0
-fi
-
+. ./buildscripts/_do_not_run_in_container
 . ./buildscripts/docker-check
 
+set -e
 remove() {
-	local name="${REPO}_${1}"
+	local name="${REPO_NAME}_${1}"
 	for img in `docker images --all --quiet ${name}`
 	do
 		docker rmi -f $img

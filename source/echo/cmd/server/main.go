@@ -1,13 +1,12 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/eccles/golanggrpc/client"
+	"github.com/eccles/golanggrpc/echo/server"
 )
 
 func main() {
@@ -16,20 +15,12 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	host := os.Getenv("GOLANGGRPC_HOST")
 	port, err := strconv.Atoi(os.Getenv("GOLANGGRPC_PORT"))
 	if err != nil {
-		log.Panicf("Illegal Port")
+		log.Panicf("Error %v", err)
 	}
-	cmd := flag.String("c", "Echo", "Command to execute")
 
-	log.Infof("Cmd %s", *cmd)
 	log.Info("Loglevel ", loglevel)
-	log.Info("Host ", host)
 	log.Info("Port ", port)
-	log.Info("Execute")
-
-	if !client.Execute(host, port, cmd) {
-		os.Exit(1)
-	}
+	server.Execute(port)
 }

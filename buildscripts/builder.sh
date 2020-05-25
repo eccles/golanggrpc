@@ -2,8 +2,7 @@
 #
 # Executes a command inside the builder container
 #
-. ./buildscripts/env
-NAME=$( basename $0 )
+. ./buildscripts/_do_not_run_in_container
 
 # Cache go dependencies externally
 # mounted in ${GODIR} inside builder container
@@ -13,9 +12,9 @@ then
 fi
 
 docker run \
-    --rm -it \
-    -v $(pwd):${HOME}/${SRC} \
-    -v ${TMPGODIR}:${GODIR} \
-    -u ${USERID} \
-    ${REPO}_builder \
-    "$@"
+	--rm -it \
+	-v $(pwd):${REPO_PATH} \
+	-v ${TMPGODIR}:${GODIR} \
+	-u ${UUID}:${GUID} \
+	${REPO_NAME}_builder \
+	"$@"

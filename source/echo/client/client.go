@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/eccles/golanggrpc/api"
-
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	echoAPI "github.com/eccles/golanggrpc/api/echo"
 )
 
 // connect - connects to server
@@ -21,13 +21,13 @@ func connect(backend string) *grpc.ClientConn {
 }
 
 // echo echoes "Online".
-func echo(backend string) *api.GRPCStatus {
+func echo(backend string) *echoAPI.GRPCStatus {
 	conn := connect(backend)
 	defer conn.Close()
 
-	myclient := api.NewGolangGRPCClient(conn)
+	myclient := echoAPI.NewGolangGRPCClient(conn)
 
-	value := &api.GRPCRequest{}
+	value := &echoAPI.GRPCRequest{}
 
 	res, err := myclient.Echo(
 		context.Background(),
@@ -39,7 +39,7 @@ func echo(backend string) *api.GRPCStatus {
 	return res
 }
 
-func printEcho(res *api.GRPCStatus) {
+func printEcho(res *echoAPI.GRPCStatus) {
 	fmt.Printf("Echo: %s\n", res.GetName())
 }
 

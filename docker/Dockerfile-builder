@@ -1,0 +1,36 @@
+ARG REPO_NAME=golanggrpc
+
+FROM ${REPO_NAME}_base
+
+ARG UUID
+ARG GUID
+ARG USER
+ARG GODIR
+
+# See buildscripts/env for similar environment variables defined
+# outside the container.
+ENV REPO_NAME=${REPO_NAME}
+ENV USER=${USER}
+ENV GUID=${GUID}
+ENV UUID=${UUID}
+
+ENV HOME=/home/${USER}
+ENV REPO_PATH=${HOME}/${REPO_NAME}
+ENV SOURCE=${REPO_PATH}/source
+ENV ARTIFACTS=${SOURCE}/artifacts
+ENV HTMLCOV=${ARTIFACTS}/htmlcov
+
+ENV GOBIN=${ARTIFACTS}/bin
+ENV GOCACHE=${ARTIFACTS}/.cache/pkg-build
+ENV GOPATH=${GODIR}
+ENV CGO_ENABLED=0
+ENV GO111MODULE=on
+
+ENV PATH=${GOPATH}/bin:${PATH}
+
+RUN groupadd -g ${GUID} ${USER} \
+  && useradd -d ${HOME} -g ${USER} -m -u ${UUID} ${USER} \
+  && mkdir -p ${GOPATH} \
+  && chmod -R 777 ${GOPATH}
+
+WORKDIR ${REPO_PATH}

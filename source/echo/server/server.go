@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/eccles/golanggrpc/api"
-
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+
+	echoAPI "github.com/eccles/golanggrpc/api/echo"
 )
 
 type server struct {
@@ -26,7 +26,7 @@ func Execute(port int) {
 
 	s := grpc.NewServer()
 
-	api.RegisterGolangGRPCServer(
+	echoAPI.RegisterGolangGRPCServer(
 		s,
 		&server{
 			status: "Online",
@@ -41,9 +41,10 @@ func Execute(port int) {
 
 func (s *server) Echo(
 	ctx context.Context,
-	grpcRequest *api.GRPCRequest) (*api.GRPCStatus, error) {
+	grpcRequest *echoAPI.GRPCRequest,
+) (*echoAPI.GRPCStatus, error) {
 	log.Info("Echo")
-	return &api.GRPCStatus{
+	return &echoAPI.GRPCStatus{
 		Name: "Online",
 	}, nil
 }

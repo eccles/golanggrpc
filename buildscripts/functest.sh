@@ -2,6 +2,8 @@
 #
 # Runs functional tests as a package
 #
+exit 0  # disabled
+. ./buildscripts/_do_not_run_in_container
 . ./buildscripts/docker-check
 set -e
 

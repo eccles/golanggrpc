@@ -2,11 +2,4 @@
 #
 # Purges all builder artifacts
 #
-. ./buildscripts/env
-NAME=$( basename $0 )
-
-if [ -d "${TMPGODIR}" ]
-then
-	chmod -R 777 ${TMPGODIR}
-	rm -rf ${TMPGODIR}
-fi
+. ./buildscripts/_do_not_run_in_container
