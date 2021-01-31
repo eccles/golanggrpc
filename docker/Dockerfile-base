@@ -3,12 +3,6 @@ FROM ubuntu:focal
 ARG REPO_NAME=golanggrpc
 ARG CONTAINER_NAME="${REPO_NAME}-base"
 
-ENV GO_VERSION=1.14.2
-ENV GOLINTER_VERSION=1.24.0
-ENV PROTOC_VERSION=3.11.4
-ENV PROTOBUF_VERSION=1.3.3
-
-ENV REPO_NAME=${REPO_NAME}
 ENV CONTAINER_NAME=${CONTAINER_NAME}
 ENV PATH=/usr/local/go/bin:${PATH}
 
@@ -36,18 +30,78 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# yq - similar to jq
+ENV YQ_VERSION=4.4.1
+RUN wget https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz -O - \
+  | tar xzvf - \
+  && mv yq_linux_amd64 /usr/local/bin/yq
+
 # protoc
+ENV PROTOC_VERSION=3.12.4
 RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip \
   && unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local bin/protoc \
   && chmod +x /usr/local/bin/protoc \
   && unzip -o protoc-${PROTOC_VERSION}-linux-x86_64.zip -d /usr/local include/* \
   && rm -rf protoc-${PROTOC_VERSION}-linux-x86_64.zip
 
+# Download common google api proto files.
+RUN curl -OL https://github.com/googleapis/api-common-protos/archive/master.zip \
+  && unzip -o master.zip -d /usr/local api-common-protos-master/google/* \
+  && ls -l /usr/local \
+  && rm -rf master.zip
+
 # go
+ENV GO_VERSION=1.15.7
 RUN curl -O https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
   && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz \
   && rm -rf go${GO_VERSION}.linux-amd64.tar.gz
 
 WORKDIR /usr/local
-# Install golinter into /usr/local/bin
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v${GOLINTER_VERSION}
+
+ARG GOPATH=/opt/go
+ARG GOCACHE=${GOPATH}/.cache/go-build
+ENV GOPATH ${GOPATH}
+ENV GOCACHE ${GOCACHE}
+ENV GOLANGCI_LINT_CACHE ${GOCACHE}
+ENV PATH ${GOPATH}/bin:/usr/local/go/bin:${PATH}
+ARG GO111MODULE=on
+ENV GO111MODULE=on
+
+ENV GOLINTER_VERSION=1.36.0
+RUN curl -O https://install.goreleaser.com/github.com/golangci/golangci-lint.sh \
+  && sh ./golangci-lint.sh v${GOLINTER_VERSION} \
+  && rm -rf golangci-lint.sh
+
+ENV GOLANGCI_LINT_CACHE ${GOCACHE}
+ENV PATH ${GOPATH}/bin:/usr/local/go/bin:${PATH}
+ARG GO111MODULE=on
+ENV GO111MODULE=on
+
+# Doing these one by one makes it easier to see which packages pull in which dependencies and
+# to understand when things go wrong.
+
+# PROTOBUF tools
+ENV PROTOBUF_VERSION=1.3.5
+ENV PROTO_GEN_VALIDATE_VERSION=v0.4.1
+ENV PROTO_GEN_DOC_VERSION=v1.4.1
+RUN go get github.com/golang/protobuf/protoc-gen-go@v${PROTOBUF_VERSION}
+RUN go get github.com/envoyproxy/protoc-gen-validate@${PROTO_GEN_VALIDATE_VERSION}
+RUN go get github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@${PROTO_GEN_DOC_VERSION}
+
+# General tools
+ENV GO_MOD_OUTDATED_VERSION=0.7.0
+ENV GOVERSION_VERSION=1.2.0
+ENV GOCOV_VERSION=1.0.0
+#
+# migration tool to convert testify unittests to gotest.tools
+ENV GO_TEST_TOOLS_VERSION=3.0.3
+RUN go get gotest.tools/v3/assert/cmd/gty-migrate-from-testify@v${GO_TEST_TOOLS_VERSION}
+#
+# Catch Junit output in json
+ENV GO_TEST_SUM_VERSION=0.6.0
+RUN mkdir /usr/local/var
+ADD https://github.com/gotestyourself/gotestsum/releases/download/v${GO_TEST_SUM_VERSION}/gotestsum_${GO_TEST_SUM_VERSION}_linux_amd64.tar.gz /usr/local/var
+WORKDIR /usr/local/var
+RUN tar xzf gotestsum_${GO_TEST_SUM_VERSION}_linux_amd64.tar.gz -C /usr/local/bin \
+  && rm gotestsum_${GO_TEST_SUM_VERSION}_linux_amd64.tar.gz
+
